@@ -1,0 +1,25 @@
+// Entity Relationship Diagram - Task Management App
+// Cara pakai: buka https://dbdiagram.io -> paste isi file ini -> diagram akan ter-render otomatis.
+// Bisa juga di-export ke PNG/PDF dari dbdiagram.io untuk deliverable ERD.
+
+Table users {
+  id uuid [pk, note: 'Primary key, generated via uuid4']
+  name varchar(120) [not null]
+  username varchar(80) [unique, not null]
+  hashed_password varchar(255) [not null]
+  created_at timestamp [default: `now()`]
+}
+
+Table tasks {
+  id uuid [pk, note: 'Primary key, generated via uuid4']
+  title varchar(200) [not null]
+  description text
+  status task_status [not null, default: 'Todo', note: 'Enum: Todo, In Progress, Done']
+  deadline timestamp
+  assignee_id uuid [ref: > users.id, note: 'FK ke users.id, nullable, ON DELETE SET NULL']
+  created_at timestamp [default: `now()`]
+  updated_at timestamp
+}
+
+// Relasi:
+// Satu user (sebagai assignee) dapat memiliki banyak task -> One-to-Many (users.id -> tasks.assignee_id)

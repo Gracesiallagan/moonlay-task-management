@@ -1,0 +1,300 @@
+{
+  "info": {
+    "name": "Task Management API - Moonlay Technical Test",
+    "description": "Koleksi endpoint untuk aplikasi Task Management (Login, Users, Tasks, Chatbot).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000" },
+    { "key": "token", "value": "" },
+    { "key": "task_id", "value": "" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const data = pm.response.json();",
+                  "  pm.collectionVariables.set('token', data.access_token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"ges\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{base_url}}/auth/login"
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"access_token\": \"eyJhbGciOiJIUzI1NiIs...\",\n  \"token_type\": \"bearer\",\n  \"user\": {\n    \"id\": \"b3f1...\",\n    \"name\": \"Ges Silaban\",\n    \"username\": \"ges\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "List Users (Assignee Options)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": ["{{base_url}}"],
+              "path": ["users"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{base_url}}/users"
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "[\n  { \"id\": \"b3f1...\", \"name\": \"Ges Silaban\", \"username\": \"ges\" },\n  { \"id\": \"a9c2...\", \"name\": \"Paul Manurung\", \"username\": \"paul\" }\n]"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tasks",
+      "item": [
+        {
+          "name": "List Tasks",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/tasks",
+              "host": ["{{base_url}}"],
+              "path": ["tasks"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Tasks (filter=Todo)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/tasks?status_filter=Todo",
+              "host": ["{{base_url}}"],
+              "path": ["tasks"],
+              "query": [{ "key": "status_filter", "value": "Todo" }]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('List Tasks (filter) - status 200', function() { pm.response.to.have.status(200); });",
+                  "pm.test('Response is array', function() { var d = pm.response.json(); pm.expect(Array.isArray(d)).to.be.true; });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Create Task",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const data = pm.response.json();",
+                  "  pm.collectionVariables.set('task_id', data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Desain wireframe login\",\n  \"description\": \"Buat wireframe halaman login untuk direview tim\",\n  \"status\": \"Todo\",\n  \"deadline\": \"2026-07-30T17:00:00\",\n  \"assignee_id\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/tasks",
+              "host": ["{{base_url}}"],
+              "path": ["tasks"]
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{base_url}}/tasks"
+              },
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"id\": \"c1d2...\",\n  \"title\": \"Desain wireframe login\",\n  \"description\": \"Buat wireframe halaman login untuk direview tim\",\n  \"status\": \"Todo\",\n  \"deadline\": \"2026-07-30T17:00:00\",\n  \"assignee\": null,\n  \"created_at\": \"2026-07-22T01:00:00\",\n  \"updated_at\": \"2026-07-22T01:00:00\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Task",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Get Task - status 200', function() { pm.response.to.have.status(200); });",
+                  "pm.test('Response has id and matches stored task_id', function() { var d = pm.response.json(); pm.expect(d.id).to.eql(pm.collectionVariables.get('task_id')); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/tasks/{{task_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["tasks", "{{task_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Task",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"In Progress\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/tasks/{{task_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["tasks", "{{task_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Task",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/tasks/{{task_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["tasks", "{{task_id}}"]
+            },
+            "url": {
+              "raw": "{{base_url}}/tasks/{{task_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["tasks", "{{task_id}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Delete Task - status 204', function() { pm.response.to.have.status(204); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "204 No Content",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": "{{base_url}}/tasks/{{task_id}}"
+              },
+              "status": "No Content",
+              "code": 204,
+              "body": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Chatbot (Bonus)",
+      "item": [
+        {
+          "name": "Ask Chatbot",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Tampilkan semua task yang statusnya belum selesai\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/chatbot/ask",
+              "host": ["{{base_url}}"],
+              "path": ["chatbot", "ask"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{base_url}}/chatbot/ask"
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"reply\": \"Task yang belum selesai:\\n- Desain wireframe login (Todo)\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
